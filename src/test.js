@@ -2,33 +2,30 @@ let contractAbi = require('./contractAbi');
 let contractBin = require('./contractBin');
 let Web3 = require('web3');
 let web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
-let ABI = require('ethereumjs-abi')
+let ABI = require('./EthereumAbi')
 
-async function doWork() {
+async function submitProblem(address, problem, value) {
     let contract = new web3.eth.Contract(contractAbi);
-    let address = '0x6909c5340cd84c69c91730b85652efcbf93562b9';
     let transaction = contract.deploy({
         data: "0x" + contractBin.object,
-        arguments: [2, 2, [3, 1, 1, 3], [6, 6], [1, 1], 120]
+        arguments: problem
     });
     await web3.eth.sendTransaction({
         from: address,
         data: transaction.encodeABI(),
         gas: await transaction.estimateGas(),
-        value: '1000000000000000000'
+        value: value
     }).on('confirmation', function(confirmCount, receipt) {
         console.log('confirm', confirmCount);
     });
 }
 
-async function doWork2(contractAddress) {
+async function commitSolution(address, contractAddress, solution, nonce, opt) {
     let contract = new web3.eth.Contract(contractAbi, contractAddress);
-    let address = '0x5cde6c1220f964c167083f0409534582ca03b5ea';
     let hashValue = ABI.soliditySHA3(
         ['int32[]', 'bytes8', 'address'],
-        [[0, 0], '0x123456', address]
+        [solution, nonce, address]
     );
-    let opt = 0;
     let method = contract.methods.solve(hashValue, opt);
     await method.send({
         from: address,
@@ -38,10 +35,9 @@ async function doWork2(contractAddress) {
     });
 }
 
-async function doWork3(contractAddress) {
+async function getBlindSolution(address, contractAddress) {
     let contract = new web3.eth.Contract(contractAbi, contractAddress);
-    let address = '0x5cde6c1220f964c167083f0409534582ca03b5ea';
-    let method = contract.methods.blindSolution('0x5cde6c1220f964c167083f0409534582ca03b5ea');
+    let method = contract.methods.blindSolution(address);
     let result = await method.call({
         from: address,
         gas: await method.estimateGas()
@@ -49,12 +45,9 @@ async function doWork3(contractAddress) {
     console.log(result);
 }
 
-async function doWork4(contractAddress) {
+async function revealSolution(address, contractAddress, solution, nonce) {
     let contract = new web3.eth.Contract(contractAbi, contractAddress);
-    let address = '0x5cde6c1220f964c167083f0409534582ca03b5ea';
-    let x = [0, 0];
-    let nonce = '0x123456';
-    let method = contract.methods.reveal(x, nonce);
+    let method = contract.methods.reveal(solution, nonce);
     await method.send({
         from: address,
         gas: await method.estimateGas({
@@ -63,9 +56,8 @@ async function doWork4(contractAddress) {
     });
 }
 
-async function doWork5(contractAddress) {
+async function getBest(address, contractAddress) {
     let contract = new web3.eth.Contract(contractAbi, contractAddress);
-    let address = '0x6909c5340cd84c69c91730b85652efcbf93562b9';
     let method = contract.methods.best();
     let result = await method.call({
         from: address,
@@ -76,9 +68,8 @@ async function doWork5(contractAddress) {
     console.log(result);
 }
 
-async function doWork6(contractAddress) {
+async function retrieveAward(address, contractAddress) {
     let contract = new web3.eth.Contract(contractAbi, contractAddress);
-    let address = '0x5cde6c1220f964c167083f0409534582ca03b5ea';
     let method = contract.methods.finish();
     console.log(await method.estimateGas({
         from: address
@@ -91,9 +82,8 @@ async function doWork6(contractAddress) {
     });
 };
 
-async function doWork7(contractAddress) {
+async function getDesription(address, contractAddress) {
     let contract = new web3.eth.Contract(contractAbi, contractAddress);
-    let address = '0x5cde6c1220f964c167083f0409534582ca03b5ea';
     let method = contract.methods.describe();
     let result = await method.call({
         from: address,
@@ -104,17 +94,19 @@ async function doWork7(contractAddress) {
     console.log(result);
 };
 
-doWork();
+submitProblem('0x12a761391996EBdb04c3faB0c91c414450cAb9c0', [2, 2, [3, 1, 1, 3], [6, 6], [1, 1], 120], '1000000000000000000');
 
-let contractAddr = '0x9bbb2012602d3c4bf0c918e09dd9368bda3105a6';
-doWork2(contractAddr);
+let contractAddr = '0x769530531CF6d2ecf24b029D3362daB6C3e23766';
+let address = '0xD54D54286cFbC47f9b28fA4eE8a0d7cbCA4F42F9';
 
-doWork3(contractAddr);
+commitSolution(address, contractAddr, [0, 0], '0x123456', 0);
 
-doWork4(contractAddr);
+getBlindSolution(address, contractAddr);
 
-doWork5(contractAddr);
+revealSolution(address, contractAddr, [0, 0], '0x123456');
 
-doWork6(contractAddr);
+getBest(address, contractAddr);
 
-doWork7(contractAddr);
+retrieveAward(address, contractAddr);
+
+getDesription(address, contractAddr);

@@ -506,7 +506,7 @@ ABI.solidityPack = function (types, values) {
 }
 
 ABI.soliditySHA3 = function (types, values) {
-    return utils.sha3(ABI.solidityPack(types, values))
+    return utils.keccak(ABI.solidityPack(types, values))
 }
 
 ABI.soliditySHA256 = function (types, values) {
