@@ -93,13 +93,14 @@ class Parser {
                 this.occur_map[var_name] = 1;
             }
         }
-
         for (var keys in this.occur_map)
             if (this.occur_map.hasOwnProperty(keys)) {
                 this.remap[keys] = n;
                 n++;
             }
         //console.log(this.remap);
+        
+        // Step2: parse these expression and fill the array
         var rel = this.parseExpression(state_object.objective);
         var num_array = rel[0], var_array = rel[1]
         //console.log(num_array)
@@ -129,6 +130,43 @@ class Parser {
             c: c
         }
     }
+    reverseParseExp(n, num_array) {
+        var i, exp = "", flag = 0;
+        for (i = 0; i < n; i++) {
+            if(num_array[i] == 0)
+                continue;
+            else if(num_array[i] > 0 && flag)
+                exp += "+";
+            flag = 1;
+            if(num_array[i] != 1 && num_array[i] != -1)
+                exp += num_array[i].toString() + String.fromCharCode(i+97);
+            else if(num_array[i] == 1)
+                exp += String.fromCharCode(i+97);
+            else
+                exp += "-" + String.fromCharCode(i+97);
+        }
+        return exp;
+    }
+
+    reverseParseObject(n, m, a, b, c) {
+        console.assert(n > 0);
+        console.assert(m >= 0);
+        console.assert(a.length === n * m);
+        console.assert(b.length === m);
+        console.assert(c.length === n);
+        console.assert(n <= 26);
+        var state_object = {
+            constraints: new Array(m),
+            objective: ""
+        };
+        state_object.objective = this.reverseParseExp(n, c);
+        var i;
+        for(i=0;i<m;i++) {
+            state_object.constraints[i] = this.reverseParseExp(n, a.slice(i*n, (i+1)*n)) + " <=" + b[i].toString();
+        }
+        return state_object;
+    }
+
 }
 
 export default Parser;
