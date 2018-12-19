@@ -2,7 +2,7 @@ let contractAbi = require('./contractAbi');
 let contractBin = require('./contractBin');
 let Web3 = require('web3');
 let web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
-let ABI = require('./EthereumAbi')
+let ABI = require('./EthereumAbi');
 
 async function submitProblem(address, problem, value) {
     let contract = new web3.eth.Contract(contractAbi);
@@ -15,7 +15,7 @@ async function submitProblem(address, problem, value) {
         data: transaction.encodeABI(),
         gas: await transaction.estimateGas(),
         value: value
-    }).on('confirmation', function(confirmCount, receipt) {
+    }).on('confirmation', function (confirmCount, receipt) {
         console.log('confirm', confirmCount);
     });
 }
