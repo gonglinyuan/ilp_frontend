@@ -2,13 +2,26 @@ import React from 'react';
 import backend from './backend'
 import moment from 'moment'
 import Parser from './Parser'
+import { withStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Divider from '@material-ui/core/Divider';
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
 
 const parser = new Parser();
+
+const styles = theme => ({
+    paper: {
+        padding: theme.spacing.unit
+    },
+});
 
 function Constraint(props) {
     return (
         <div>
-            <input className="Constraint" type="text" value={props.value} onChange={props.onChange}/>
+            <TextField required value={props.value} onChange={props.onChange} />
         </div>
     );
 }
@@ -33,28 +46,22 @@ class Wallet extends React.Component {
 
     render() {
         return (
-            <div>
-                <h3>Wallet</h3>
-                <div>
-                    <label>
-                        Address:
-                        <input className="Wallet" type="text" value={this.props.address}
-                               onChange={(event) => this.handleAddressChange(event.target.value)}/>
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        Balance: {this.state.balance} ETH
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        Bounty:
-                        <input className="Wallet" type="text" max={this.state.balance} value={this.props.bounty}
-                               onChange={(event) => this.props.onBountyChange(event.target.value)}/>
-                         ETH
-                    </label>
-                </div>
+            <div className={this.props.classes.paper}>
+                <Typography variant="h6" gutterBottom>
+                    Wallet
+                </Typography>
+                    <div>
+                            <TextField value={this.props.address} label="Address"
+                                       onChange={(event) => this.handleAddressChange(event.target.value)}/>
+                    </div>
+                    <div>
+                        <TextField value={this.state.balance ? this.state.balance + "ETH" : ''}
+                                   label="Balance" readonly />
+                    </div>
+                    <div>
+                            <TextField max={this.state.balance} value={this.props.bounty} label="Bounty"
+                                       onChange={(event) => this.props.onBountyChange(event.target.value)}/>
+                    </div>
             </div>
         )
     }
@@ -67,7 +74,7 @@ class ProblemFactory extends React.Component {
             objective: '',
             constraints: [],
             address: '',
-            bounty: '0',
+            bounty: '',
             time: '00:00',
             log: []
         };
@@ -132,36 +139,45 @@ class ProblemFactory extends React.Component {
     }
 
     render() {
+        const { classes } = this.props;
         let constraintsHTML = [];
         for (let i = 0; i < this.state.constraints.length; ++i) {
             constraintsHTML.push(this.renderConstraint(i));
         }
         return (
-            <div>
+            <Grid container spacing={16}>
+                <Grid item>
+            <Paper className={classes.paper}>
                 <form onSubmit={(event) => this.handleSubmit(event)}>
-                    <div>
-                        <h3>Problem</h3>
+                    <div className={classes.paper}>
+                        <Typography variant="h6" gutterBottom>
+                            Problem
+                        </Typography>
                         <div>
-                            <label>
-                                Maximize:
-                                <input type="text" value={this.state.objective}
-                                       onChange={(event) => this.handleObjectiveChange(event.target.value)}/>
-                            </label>
+                                <TextField value={this.state.objective} label="Objective"
+                                           onChange={(event) => this.handleObjectiveChange(event.target.value)}/>
                         </div>
                         <div>
                             <label>
                                 Subject To:
-                                <input type="button" value="Add" onClick={() => this.handleClick()}/>
+                                <Button color="primary" onClick={() => this.handleClick()}>
+                                    Add
+                                </Button>
                             </label>
                         </div>
 
                         {constraintsHTML}
                     </div>
 
+                    <Divider variant="middle"/>
+
                     <Wallet address={this.state.address} bounty={this.state.bounty}
                             onAddressChange={this.handleAddressChange.bind(this)}
-                            onBountyChange={this.handleBountyChange.bind(this)}/>
+                            onBountyChange={this.handleBountyChange.bind(this)}
+                            classes={classes}/>
 
+                    <Divider variant="middle"/>
+                    <div className={classes.paper}>
                     <div>
                         <label>Time:</label>
                         <input type="time" value={this.state.time} min="00:00"
@@ -169,9 +185,15 @@ class ProblemFactory extends React.Component {
                     </div>
 
                     <div>
-                        <input type="submit" value="Submit"/>
+                        <Button color="primary" type="submit">
+                            Submit
+                        </Button>
+                    </div>
                     </div>
                 </form>
+
+            </Paper>
+                </Grid>
                 <div>
                     {
                         this.state.log.map((str) => (
@@ -179,9 +201,9 @@ class ProblemFactory extends React.Component {
                         ))
                     }
                 </div>
-            </div>
+            </Grid>
         );
     }
 }
 
-export default ProblemFactory;
+export default withStyles(styles)(ProblemFactory);

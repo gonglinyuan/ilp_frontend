@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^3.7.0",
     "bn.js": "^4.11.8",
     "ethereumjs-util": "^6.0.0",
     "moment": "^2.23.0",

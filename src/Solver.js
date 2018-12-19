@@ -1,44 +1,63 @@
 import React from 'react';
 import backend from './backend';
+import { withStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Divider from '@material-ui/core/Divider';
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+
+const styles = theme => ({
+    paper: {
+        padding: theme.spacing.unit * 2
+    },
+});
 
 function ContractForm(props) {
     return (
-        <div>
-            <form onSubmit={props.onSubmit}>
+        <Grid item>
+            <Paper className={props.classes.paper}>
+                <form onSubmit={props.onSubmit}>
+                    <div>
+                        <label>
+                            My Address:
+                            <TextField required className="TextField" value={props.address}
+                                       onChange={props.onAddressChange}/>
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            Contract Address:
+                            <TextField required className="TextField" value={props.contractAddress}
+                                       onChange={props.onContractChange}/>
+                        </label>
+                    </div>
+                    <div>
+                        <Button color="primary" type="submit">
+                            Get Problem
+                        </Button>
+                    </div>
+                </form>
+                <Divider variant="middle"/>
                 <div>
-                    <label>
-                        My Address:
-                        <input type="text" value={props.address} onChange={props.onAddressChange}/>
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        Contract Address:
-                        <input type="text" value={props.contractAddress} onChange={props.onContractChange}/>
-                    </label>
-                </div>
-                <div>
-                    <input type="submit" value="Get Problem" />
-                </div>
-            </form>
-            <div>
-                <p>
-                    Maximize:
-                </p>
-                <p>
-                    Subject to:
-                </p>
-                <ul>
+                    <p>
+                        Maximize:
+                    </p>
+                    <p>
+                        Subject to:
+                    </p>
+                    <ul>
 
-                </ul>
-                <p>
-                    Deadline: {props.deadline}
-                </p>
-                <p>
-                    Bounty: {props.bounty}
-                </p>
-            </div>
-        </div>
+                    </ul>
+                    <p>
+                        Deadline: {props.deadline}
+                    </p>
+                    <p>
+                        Bounty: {props.bounty}
+                    </p>
+                </div>
+            </Paper>
+        </Grid>
     )
 }
 
@@ -79,7 +98,7 @@ class Solver extends React.Component {
 
     handleSolutionChange(newSolution) {
         this.setState({
-            solution : newSolution
+            solution: newSolution
         });
     }
 
@@ -124,38 +143,50 @@ class Solver extends React.Component {
     }
 
     render() {
+        const { classes } = this.props;
         return (
-            <div>
-                <h3>Problem</h3>
-                <ContractForm address={this.state.address}
+            <Grid container spacing={16}>
+                <ContractForm classes={classes}
+                              address={this.state.address}
                               contractAddress={this.state.contractAddress}
                               deadline={this.state.problem ? this.state.problem.deadline.toString() : ''}
                               bounty={this.state.problem ? this.state.problem.bounty + ' ETH' : ''}
                               onAddressChange={(event) => this.handleAddressChange(event.target.value)}
                               onContractChange={(event) => this.handleContractChange(event.target.value)}
                               onSubmit={this.handleContractSubmit.bind(this)}/>
-                <h3>Submit Solution</h3>
-                <form>
-                    <div>
-                        <label>
-                            Solution Vector:
-                            <input type="text" value={this.state.solution}
-                                   onChange={(event) => this.handleSolutionChange(event.target.value)} />
-                        </label>
-                    </div>
-                    <div>
-                        <label>
-                            Optimal Value:
-                            <input type="text" value={this.state.opt}
-                                   onChange={(event) => this.handleOptChange(event.target.value)} />
-                        </label>
-                    </div>
-                    <div>
-                        <input type="button" value="Commit" onClick={this.handleCommit.bind(this)} />
-                        <input type="button" value="Reveal" onClick={this.handleReveal.bind(this)} />
-                        <input type="button" value="Claim Reward" onClick={this.handleFinish.bind(this)} />
-                    </div>
-                </form>
+
+                <Grid item>
+                    <Paper className={classes.paper}>
+                        <form>
+                            <div>
+                                <label>
+                                    Solution Vector:
+                                    <TextField required className="TextField" value={this.state.solution}
+                                               onChange={(event) => this.handleSolutionChange(event.target.value)}/>
+                                </label>
+                            </div>
+                            <div>
+                                <label>
+                                    Optimal Value:
+                                    <TextField required className="TextField" value={this.state.opt}
+                                               onChange={(event) => this.handleOptChange(event.target.value)}/>
+                                </label>
+                            </div>
+                            <div>
+                                {/*<input type="button" value="Commit"  />*/}
+                                <Button color="primary" onClick={this.handleCommit.bind(this)}>
+                                    Commit
+                                </Button>
+                                <Button color="primary" onClick={this.handleReveal.bind(this)}>
+                                    Reveal
+                                </Button>
+                                <Button color="primary" onClick={this.handleFinish.bind(this)}>
+                                    Claim Reward
+                                </Button>
+                            </div>
+                        </form>
+                    </Paper>
+                </Grid>
                 <div>
                     {
                         this.state.log.map((str) => (
@@ -163,9 +194,9 @@ class Solver extends React.Component {
                         ))
                     }
                 </div>
-            </div>
+            </Grid>
         );
     }
 }
 
-export default Solver;
+export default withStyles(styles)(Solver);
