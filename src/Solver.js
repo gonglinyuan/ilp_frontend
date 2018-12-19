@@ -1,12 +1,14 @@
 import React, {Component} from 'react';
 import backend from './backend';
-import { withStyles } from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Parser from './Parser'
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
 
 const parser = new Parser();
 
@@ -19,13 +21,13 @@ const styles = theme => ({
 class ContractForm extends Component {
     renderConstraint(i) {
         return (
-            <li>{this.props.constraints[i]}</li>
+            <ListItem>{this.props.constraints[i]}</ListItem>
         )
     }
 
     render() {
         var constraintsHTML = [];
-        for (let i = 0; i < this.props.constraints[i]; ++i) {
+        for (let i = 0; i < this.props.constraints.length; ++i) {
             constraintsHTML.push(this.renderConstraint(i));
         }
         return (
@@ -33,18 +35,13 @@ class ContractForm extends Component {
                 <Paper className={this.props.classes.paper}>
                     <form onSubmit={this.props.onSubmit}>
                         <div>
-                            <label>
-                                My Address:
-                                <TextField required className="TextField" value={this.props.address}
-                                           onChange={this.props.onAddressChange}/>
-                            </label>
+                            <TextField required className="TextField" value={this.props.address} label="My Address"
+                                       onChange={this.props.onAddressChange}/>
                         </div>
                         <div>
-                            <label>
-                                Contract Address:
-                                <TextField required className="TextField" value={this.props.contractAddress}
-                                           onChange={this.props.onContractChange}/>
-                            </label>
+                            <TextField required className="TextField" value={this.props.contractAddress}
+                                       label="Contract Address"
+                                       onChange={this.props.onContractChange}/>
                         </div>
                         <div>
                             <Button color="primary" type="submit">
@@ -60,9 +57,9 @@ class ContractForm extends Component {
                         <p>
                             Subject to:
                         </p>
-                        <ul>
+                        <List>
                             {constraintsHTML}
-                        </ul>
+                        </List>
                         <p>
                             Deadline: {this.props.deadline}
                         </p>
@@ -158,13 +155,13 @@ class Solver extends React.Component {
     }
 
     render() {
-        const { classes } = this.props;
+        const {classes} = this.props;
         let parsed = this.state.problem ? parser.reverseParseObject(
             this.state.problem.n, this.state.problem.m,
             this.state.problem.a, this.state.problem.b, this.state.problem.c
         ) : {
-            objective : '',
-            constraints : []
+            objective: '',
+            constraints: []
         };
         console.log(parsed);
         return (
@@ -184,18 +181,13 @@ class Solver extends React.Component {
                     <Paper className={classes.paper}>
                         <form>
                             <div>
-                                <label>
-                                    Solution Vector:
-                                    <TextField required className="TextField" value={this.state.solution}
-                                               onChange={(event) => this.handleSolutionChange(event.target.value)}/>
-                                </label>
+                                <TextField required className="TextField" value={this.state.solution}
+                                           label="Solution Vector"
+                                           onChange={(event) => this.handleSolutionChange(event.target.value)}/>
                             </div>
                             <div>
-                                <label>
-                                    Optimal Value:
-                                    <TextField required className="TextField" value={this.state.opt}
-                                               onChange={(event) => this.handleOptChange(event.target.value)}/>
-                                </label>
+                                <TextField required className="TextField" value={this.state.opt} label="Optimal Value"
+                                           onChange={(event) => this.handleOptChange(event.target.value)}/>
                             </div>
                             <div>
                                 <Button color="primary" onClick={this.handleCommit.bind(this)}>

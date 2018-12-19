@@ -162,7 +162,7 @@ class Parser {
         state_object.objective = this.reverseParseExp(n, c);
         var i;
         for(i=0;i<m;i++) {
-            state_object.constraints[i] = this.reverseParseExp(n, a.slice(i*n, (i+1)*n)) + " <=" + b[i].toString();
+            state_object.constraints[i] = this.reverseParseExp(n, a.slice(i*n, (i+1)*n)) + " <= " + b[i].toString();
         }
         return state_object;
     }

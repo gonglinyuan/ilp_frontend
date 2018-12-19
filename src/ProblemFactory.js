@@ -55,7 +55,7 @@ class Wallet extends React.Component {
                                        onChange={(event) => this.handleAddressChange(event.target.value)}/>
                     </div>
                     <div>
-                        <TextField value={this.state.balance ? this.state.balance + "ETH" : ''}
+                        <TextField value={this.state.balance ? this.state.balance + " ETH" : ''}
                                    label="Balance" readonly />
                     </div>
                     <div>
