@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Component} from 'react';
 import backend from './backend';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -6,6 +6,9 @@ import TextField from '@material-ui/core/TextField';
 import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
+import Parser from './Parser'
+
+const parser = new Parser();
 
 const styles = theme => ({
     paper: {
@@ -13,52 +16,64 @@ const styles = theme => ({
     },
 });
 
-function ContractForm(props) {
-    return (
-        <Grid item>
-            <Paper className={props.classes.paper}>
-                <form onSubmit={props.onSubmit}>
-                    <div>
-                        <label>
-                            My Address:
-                            <TextField required className="TextField" value={props.address}
-                                       onChange={props.onAddressChange}/>
-                        </label>
-                    </div>
-                    <div>
-                        <label>
-                            Contract Address:
-                            <TextField required className="TextField" value={props.contractAddress}
-                                       onChange={props.onContractChange}/>
-                        </label>
-                    </div>
-                    <div>
-                        <Button color="primary" type="submit">
-                            Get Problem
-                        </Button>
-                    </div>
-                </form>
-                <Divider variant="middle"/>
-                <div>
-                    <p>
-                        Maximize:
-                    </p>
-                    <p>
-                        Subject to:
-                    </p>
-                    <ul>
+class ContractForm extends Component {
+    renderConstraint(i) {
+        return (
+            <li>{this.props.constraints[i]}</li>
+        )
+    }
 
-                    </ul>
-                    <p>
-                        Deadline: {props.deadline}
-                    </p>
-                    <p>
-                        Bounty: {props.bounty}
-                    </p>
-                </div>
-            </Paper>
-        </Grid>
-    )
+    render() {
+        var constraintsHTML = [];
+        for (let i = 0; i < this.props.constraints[i]; ++i) {
+            constraintsHTML.push(this.renderConstraint(i));
+        }
+        return (
+            <Grid item>
+                <Paper className={this.props.classes.paper}>
+                    <form onSubmit={this.props.onSubmit}>
+                        <div>
+                            <label>
+                                My Address:
+                                <TextField required className="TextField" value={this.props.address}
+                                           onChange={this.props.onAddressChange}/>
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                Contract Address:
+                                <TextField required className="TextField" value={this.props.contractAddress}
+                                           onChange={this.props.onContractChange}/>
+                            </label>
+                        </div>
+                        <div>
+                            <Button color="primary" type="submit">
+                                Get Problem
+                            </Button>
+                        </div>
+                    </form>
+                    <Divider variant="middle"/>
+                    <div>
+                        <p>
+                            Maximize: {this.props.objective}
+                        </p>
+                        <p>
+                            Subject to:
+                        </p>
+                        <ul>
+                            {constraintsHTML}
+                        </ul>
+                        <p>
+                            Deadline: {this.props.deadline}
+                        </p>
+                        <p>
+                            Bounty: {this.props.bounty}
+                        </p>
+                    </div>
+                </Paper>
+            </Grid>
+        )
+    }
 }
 
 class Solver extends React.Component {
@@ -144,12 +159,22 @@ class Solver extends React.Component {
 
     render() {
         const { classes } = this.props;
+        let parsed = this.state.problem ? parser.reverseParseObject(
+            this.state.problem.n, this.state.problem.m,
+            this.state.problem.a, this.state.problem.b, this.state.problem.c
+        ) : {
+            objective : '',
+            constraints : []
+        };
+        console.log(parsed);
         return (
             <Grid container spacing={16}>
                 <ContractForm classes={classes}
                               address={this.state.address}
                               contractAddress={this.state.contractAddress}
                               deadline={this.state.problem ? this.state.problem.deadline.toString() : ''}
+                              objective={parsed.objective}
+                              constraints={parsed.constraints}
                               bounty={this.state.problem ? this.state.problem.bounty + ' ETH' : ''}
                               onAddressChange={(event) => this.handleAddressChange(event.target.value)}
                               onContractChange={(event) => this.handleContractChange(event.target.value)}
@@ -173,7 +198,6 @@ class Solver extends React.Component {
                                 </label>
                             </div>
                             <div>
-                                {/*<input type="button" value="Commit"  />*/}
                                 <Button color="primary" onClick={this.handleCommit.bind(this)}>
                                     Commit
                                 </Button>
