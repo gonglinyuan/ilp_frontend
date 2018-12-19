@@ -2,7 +2,7 @@ import React from 'react';
 import backend from './backend'
 import moment from 'moment'
 import Parser from './Parser'
-import { withStyles } from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Divider from '@material-ui/core/Divider';
@@ -21,7 +21,7 @@ const styles = theme => ({
 function Constraint(props) {
     return (
         <div>
-            <TextField required value={props.value} onChange={props.onChange} />
+            <TextField required value={props.value} onChange={props.onChange}/>
         </div>
     );
 }
@@ -31,7 +31,7 @@ class Wallet extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            balance : ''
+            balance: ''
         };
     }
 
@@ -50,18 +50,18 @@ class Wallet extends React.Component {
                 <Typography variant="h6" gutterBottom>
                     Wallet
                 </Typography>
-                    <div>
-                            <TextField value={this.props.address} label="Address"
-                                       onChange={(event) => this.handleAddressChange(event.target.value)}/>
-                    </div>
-                    <div>
-                        <TextField value={this.state.balance ? this.state.balance + " ETH" : ''}
-                                   label="Balance" readonly />
-                    </div>
-                    <div>
-                            <TextField max={this.state.balance} value={this.props.bounty} label="Bounty"
-                                       onChange={(event) => this.props.onBountyChange(event.target.value)}/>
-                    </div>
+                <div>
+                    <TextField value={this.props.address} label="Address"
+                               onChange={(event) => this.handleAddressChange(event.target.value)}/>
+                </div>
+                <div>
+                    <TextField value={this.state.balance ? this.state.balance + " ETH" : ''}
+                               label="Balance" readonly/>
+                </div>
+                <div>
+                    <TextField max={this.state.balance} value={this.props.bounty} label="Bounty"
+                               onChange={(event) => this.props.onBountyChange(event.target.value)}/>
+                </div>
             </div>
         )
     }
@@ -139,7 +139,7 @@ class ProblemFactory extends React.Component {
     }
 
     render() {
-        const { classes } = this.props;
+        const {classes} = this.props;
         let constraintsHTML = [];
         for (let i = 0; i < this.state.constraints.length; ++i) {
             constraintsHTML.push(this.renderConstraint(i));
@@ -147,52 +147,52 @@ class ProblemFactory extends React.Component {
         return (
             <Grid container spacing={16}>
                 <Grid item>
-            <Paper className={classes.paper}>
-                <form onSubmit={(event) => this.handleSubmit(event)}>
-                    <div className={classes.paper}>
-                        <Typography variant="h6" gutterBottom>
-                            Problem
-                        </Typography>
-                        <div>
-                                <TextField value={this.state.objective} label="Objective"
-                                           onChange={(event) => this.handleObjectiveChange(event.target.value)}/>
-                        </div>
-                        <div>
-                            <label>
-                                Subject To:
-                                <Button color="primary" onClick={() => this.handleClick()}>
-                                    Add
-                                </Button>
-                            </label>
-                        </div>
+                    <Paper className={classes.paper}>
+                        <form onSubmit={(event) => this.handleSubmit(event)}>
+                            <div className={classes.paper}>
+                                <Typography variant="h6" gutterBottom>
+                                    Problem
+                                </Typography>
+                                <div>
+                                    <TextField value={this.state.objective} label="Objective"
+                                               onChange={(event) => this.handleObjectiveChange(event.target.value)}/>
+                                </div>
+                                <div>
+                                    <label>
+                                        Subject To:
+                                        <Button color="primary" onClick={() => this.handleClick()}>
+                                            Add
+                                        </Button>
+                                    </label>
+                                </div>
 
-                        {constraintsHTML}
-                    </div>
+                                {constraintsHTML}
+                            </div>
 
-                    <Divider variant="middle"/>
+                            <Divider variant="middle"/>
 
-                    <Wallet address={this.state.address} bounty={this.state.bounty}
-                            onAddressChange={this.handleAddressChange.bind(this)}
-                            onBountyChange={this.handleBountyChange.bind(this)}
-                            classes={classes}/>
+                            <Wallet address={this.state.address} bounty={this.state.bounty}
+                                    onAddressChange={this.handleAddressChange.bind(this)}
+                                    onBountyChange={this.handleBountyChange.bind(this)}
+                                    classes={classes}/>
 
-                    <Divider variant="middle"/>
-                    <div className={classes.paper}>
-                    <div>
-                        <label>Time:</label>
-                        <input type="time" value={this.state.time} min="00:00"
-                               onChange={(event) => this.handleTimeChange(event.target.value)}/>
-                    </div>
+                            <Divider variant="middle"/>
+                            <div className={classes.paper}>
+                                <div>
+                                    <label>Time:</label>
+                                    <input type="time" value={this.state.time} min="00:00"
+                                           onChange={(event) => this.handleTimeChange(event.target.value)}/>
+                                </div>
 
-                    <div>
-                        <Button color="primary" type="submit">
-                            Submit
-                        </Button>
-                    </div>
-                    </div>
-                </form>
+                                <div>
+                                    <Button color="primary" type="submit">
+                                        Submit
+                                    </Button>
+                                </div>
+                            </div>
+                        </form>
 
-            </Paper>
+                    </Paper>
                 </Grid>
                 <div>
                     {
