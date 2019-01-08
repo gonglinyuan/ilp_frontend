@@ -43,7 +43,7 @@ contract Problem {
         owner = _owner;
     }
     
-    function hash(int32[] memory _x, bytes8 _nonce) public view returns (bytes32) {
+    function getHash(int32[] memory _x, bytes8 _nonce) public view returns (bytes32) {
         return keccak256(abi.encodePacked(_x, _nonce, msg.sender));
     }
     
@@ -117,18 +117,16 @@ contract Problem {
 }
 
 contract ProblemCreator {
-    address payable public funder;
+    address payable public founder;
     Problem[] problems;
     
-    event ProblemCreated(Problem problemAddr);
-    
     constructor() public {
-        funder = msg.sender;
+        founder = msg.sender;
     }
     
     // consistent with constructor of Problem
     function createProblem(uint32 _n, uint32 _m, int32[] memory _a, int32[] memory _b, int32[] memory _c, uint _time) public payable returns (Problem) {
-        funder.transfer(msg.value / 100);
+        founder.transfer(msg.value / 100);
         Problem problemAddr = (new Problem).value(msg.value - msg.value / 100)(msg.sender, _n, _m, _a, _b, _c, _time);
         problems.push(problemAddr);
         return problemAddr;
