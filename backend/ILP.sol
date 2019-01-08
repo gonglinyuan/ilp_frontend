@@ -29,7 +29,7 @@ contract Problem {
     bool public finished;
     
     // n variables, m constraints; a is int[m, n], b is int[m], c is int[n]
-    constructor(uint32 _n, uint32 _m, int32[] memory _a, int32[] memory _b, int32[] memory _c, uint _time) public payable {
+    constructor(address _owner, uint32 _n, uint32 _m, int32[] memory _a, int32[] memory _b, int32[] memory _c, uint _time) public payable {
         require(_a.length == uint64(_n) * uint64(_m));
         require(_b.length == _m);
         require(_c.length == _n);
@@ -40,7 +40,7 @@ contract Problem {
         c = _c;
         deadline = block.timestamp + _time;
         finished = false;
-        owner = msg.sender;
+        owner = _owner;
     }
     
     function hash(int32[] memory _x, bytes8 _nonce) public view returns (bytes32) {
@@ -118,6 +118,7 @@ contract Problem {
 
 contract ProblemCreator {
     address payable public funder;
+    Problem[] problems;
     
     event ProblemCreated(Problem problemAddr);
     
@@ -128,8 +129,12 @@ contract ProblemCreator {
     // consistent with constructor of Problem
     function createProblem(uint32 _n, uint32 _m, int32[] memory _a, int32[] memory _b, int32[] memory _c, uint _time) public payable returns (Problem) {
         funder.transfer(msg.value / 100);
-        Problem problemAddr = (new Problem).value(msg.value - msg.value / 100)(_n, _m, _a, _b, _c, _time);
-        emit ProblemCreated(problemAddr);
+        Problem problemAddr = (new Problem).value(msg.value - msg.value / 100)(msg.sender, _n, _m, _a, _b, _c, _time);
+        problems.push(problemAddr);
         return problemAddr;
+    }
+    
+    function problemList() public view returns (Problem[] memory) {
+        return problems;
     }
 }
