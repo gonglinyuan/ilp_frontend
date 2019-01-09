@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import moment from "moment";
 import backend from './backend';
 import {withStyles} from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -131,7 +132,7 @@ class ContractForm extends Component {
                         {constraintsHTML}
                     </List>
                     <p>
-                        Deadline: {this.props.deadline.toLocaleString()}
+                        Deadline: {this.props.deadline}
                     </p>
                     <p>
                         Bounty: {this.props.bounty}
@@ -282,7 +283,7 @@ class Solver extends React.Component {
                     <ContractForm classes={classes}
                                   address={this.state.address}
                                   contractAddress={this.state.contractAddress}
-                                  deadline={this.state.problem ? this.state.problem.deadline.toString() : ''}
+                                  deadline={this.state.problem ? moment(this.state.problem.deadline).format("YYYY-MM-DD HH:mm:ss") : ''}
                                   objective={parsed.objective}
                                   constraints={parsed.constraints}
                                   bounty={this.state.problem ? this.state.problem.bounty + ' ETH' : ''}
