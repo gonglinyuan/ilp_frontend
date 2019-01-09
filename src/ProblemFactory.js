@@ -11,6 +11,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 
 const parser = new Parser();
+const creatorContractAddress = '0x9c17a92FCF7D356AE470832FB958121149Ae98c0';
 
 const styles = theme => ({
     paper: {
@@ -56,7 +57,7 @@ class Wallet extends React.Component {
                 </div>
                 <div>
                     <TextField value={this.state.balance ? this.state.balance + " ETH" : ''}
-                               label="Balance" readonly/>
+                               label="Balance" readOnly/>
                 </div>
                 <div>
                     <TextField max={this.state.balance} value={this.props.bounty} label="Bounty"
@@ -123,12 +124,7 @@ class ProblemFactory extends React.Component {
         var problem = parser.parseObject(this.state);
         problem.time = moment.duration(this.state.time).asSeconds();
         console.log(problem);
-        backend.submitProblem(this.state.address, problem, this.state.bounty, (receipt) => {
-            this.setState({
-                log: this.state.log.concat(["Contract created: " + receipt.contractAddress])
-            });
-        });
-        event.preventDefault();
+        backend.createProblem(this.state.address, creatorContractAddress, problem, this.state.bounty, console.log);
     }
 
     renderConstraint(i) {
@@ -146,7 +142,7 @@ class ProblemFactory extends React.Component {
         }
         return (
             <Grid container spacing={16}>
-                <Grid item>
+                <Grid item xs={12}>
                     <Paper className={classes.paper}>
                         <form onSubmit={(event) => this.handleSubmit(event)}>
                             <div className={classes.paper}>

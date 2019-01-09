@@ -9,14 +9,102 @@ import Paper from '@material-ui/core/Paper';
 import Parser from './Parser'
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
 
 const parser = new Parser();
+const creatorContractAddress = '0x9c17a92FCF7D356AE470832FB958121149Ae98c0';
 
 const styles = theme => ({
     paper: {
         padding: theme.spacing.unit * 2
     },
 });
+
+class LoginFrom extends Component {
+    render() {
+        if (this.props.loggedIn) {
+            return (
+                <Grid item xs={12}>
+                    <Paper className={this.props.classes.paper}>
+                        <form onSubmit={this.props.onSubmit}>
+                            <div>
+                                <TextField required className="TextField" value={this.props.address} label="Address"
+                                           readOnly/>
+                            </div>
+                            <div>
+                                <TextField required className="TextField" value={this.props.balance} label="Balance"
+                                           readOnly/>
+                            </div>
+                        </form>
+                    </Paper>
+                </Grid>
+            )
+        } else {
+            return (
+                <Grid item xs={12}>
+                    <Paper className={this.props.classes.paper}>
+                        <form onSubmit={this.props.onSubmit}>
+                            <div>
+                                <TextField required className="TextField" value={this.props.address} label="Address"
+                                           onChange={this.props.onAddressChange}/>
+                            </div>
+                            <div>
+                                <Button color="primary" type="submit">
+                                    Login
+                                </Button>
+                            </div>
+                        </form>
+                    </Paper>
+                </Grid>
+            )
+        }
+
+    }
+}
+
+class ProblemList extends Component {
+    renderProblem(problemAddress, i) {
+        return (
+            <TableRow>
+                <TableCell>{problemAddress}</TableCell>
+                <TableCell>
+                    <Button color="primary" onClick={(event) => this.props.onSubmit(i)}>
+                        Show
+                    </Button>
+                </TableCell>
+            </TableRow>
+        )
+    }
+
+    render() {
+        var problemsHTML = [];
+        for (let i = 0; i < this.props.problemList.length; ++i) {
+            problemsHTML.push(this.renderProblem(this.props.problemList[i], i));
+        }
+        problemsHTML = problemsHTML.reverse();
+        return (
+            <Grid item xs={12}>
+                <Paper className={this.props.classes.paper}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Address</TableCell>
+                                <TableCell/>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {problemsHTML}
+                        </TableBody>
+                    </Table>
+                </Paper>
+            </Grid>
+        )
+    }
+}
 
 class ContractForm extends Component {
     renderConstraint(i) {
@@ -31,42 +119,23 @@ class ContractForm extends Component {
             constraintsHTML.push(this.renderConstraint(i));
         }
         return (
-            <Grid item>
+            <Grid item xs={12}>
                 <Paper className={this.props.classes.paper}>
-                    <form onSubmit={this.props.onSubmit}>
-                        <div>
-                            <TextField required className="TextField" value={this.props.address} label="My Address"
-                                       onChange={this.props.onAddressChange}/>
-                        </div>
-                        <div>
-                            <TextField required className="TextField" value={this.props.contractAddress}
-                                       label="Contract Address"
-                                       onChange={this.props.onContractChange}/>
-                        </div>
-                        <div>
-                            <Button color="primary" type="submit">
-                                Get Problem
-                            </Button>
-                        </div>
-                    </form>
-                    <Divider variant="middle"/>
-                    <div>
-                        <p>
-                            Maximize: {this.props.objective}
-                        </p>
-                        <p>
-                            Subject to:
-                        </p>
-                        <List>
-                            {constraintsHTML}
-                        </List>
-                        <p>
-                            Deadline: {this.props.deadline}
-                        </p>
-                        <p>
-                            Bounty: {this.props.bounty}
-                        </p>
-                    </div>
+                    <p>
+                        Maximize: {this.props.objective}
+                    </p>
+                    <p>
+                        Subject to:
+                    </p>
+                    <List>
+                        {constraintsHTML}
+                    </List>
+                    <p>
+                        Deadline: {this.props.deadline.toLocaleString()}
+                    </p>
+                    <p>
+                        Bounty: {this.props.bounty}
+                    </p>
                 </Paper>
             </Grid>
         )
@@ -78,6 +147,9 @@ class Solver extends React.Component {
         super(props);
         this.state = {
             address: '',
+            loggedIn: false,
+            balance: '',
+            problemList: [],
             contractAddress: '',
             problem: null,
             solution: '',
@@ -96,6 +168,36 @@ class Solver extends React.Component {
     handleContractChange(newContractAddress) {
         this.setState({
             contractAddress: newContractAddress
+        });
+    }
+
+    handleLoginSubmit(event) {
+        if (backend.isValidAddress(this.state.address)) {
+            backend.getBalance(this.state.address).then((function (newBalance) {
+                this.setState({
+                    balance: newBalance,
+                    loggedIn: true
+                });
+            }).bind(this));
+            backend.getProblemList(this.state.address, creatorContractAddress, (function (problemList) {
+                this.setState({
+                    problemList: problemList
+                });
+            }).bind(this));
+        }
+        event.preventDefault();
+    }
+
+    handleProblemShowSubmit(i) {
+        console.log(this);
+        console.log(this.state.address);
+        console.log(this.state.problemList);
+        console.log(i);
+        backend.getDesription(this.state.address, this.state.problemList[i], (problem) => {
+            this.setState({
+                problem: problem,
+                contractAddress: this.state.problemList[i]
+            });
         });
     }
 
@@ -146,7 +248,8 @@ class Solver extends React.Component {
             this.state.address,
             this.state.contractAddress,
             JSON.parse(this.state.solution),
-            this.state.nonce
+            this.state.nonce,
+            parseInt(this.state.opt)
         )
     }
 
@@ -156,62 +259,85 @@ class Solver extends React.Component {
 
     render() {
         const {classes} = this.props;
-        let parsed = this.state.problem ? parser.reverseParseObject(
-            this.state.problem.n, this.state.problem.m,
-            this.state.problem.a, this.state.problem.b, this.state.problem.c
-        ) : {
-            objective: '',
-            constraints: []
-        };
-        console.log(parsed);
-        return (
-            <Grid container spacing={16}>
-                <ContractForm classes={classes}
-                              address={this.state.address}
-                              contractAddress={this.state.contractAddress}
-                              deadline={this.state.problem ? this.state.problem.deadline.toString() : ''}
-                              objective={parsed.objective}
-                              constraints={parsed.constraints}
-                              bounty={this.state.problem ? this.state.problem.bounty + ' ETH' : ''}
-                              onAddressChange={(event) => this.handleAddressChange(event.target.value)}
-                              onContractChange={(event) => this.handleContractChange(event.target.value)}
-                              onSubmit={this.handleContractSubmit.bind(this)}/>
+        if (this.state.loggedIn) {
+            let parsed = this.state.problem ? parser.reverseParseObject(
+                this.state.problem.n, this.state.problem.m,
+                this.state.problem.a, this.state.problem.b, this.state.problem.c
+            ) : {
+                objective: '',
+                constraints: []
+            };
+            console.log(parsed);
+            return (
+                <Grid container spacing={16}>
+                    <LoginFrom classes={this.props.classes}
+                               address={this.state.address}
+                               balance={this.state.balance}
+                               loggedIn={this.state.loggedIn}
+                               onAddressChange={(event) => this.handleAddressChange(event.target.value)}
+                               onSubmit={this.handleLoginSubmit.bind(this)}/>
+                    <ProblemList classes={classes}
+                                 problemList={this.state.problemList}
+                                 onSubmit={this.handleProblemShowSubmit.bind(this)}/>
+                    <ContractForm classes={classes}
+                                  address={this.state.address}
+                                  contractAddress={this.state.contractAddress}
+                                  deadline={this.state.problem ? this.state.problem.deadline.toString() : ''}
+                                  objective={parsed.objective}
+                                  constraints={parsed.constraints}
+                                  bounty={this.state.problem ? this.state.problem.bounty + ' ETH' : ''}
+                                  onAddressChange={(event) => this.handleAddressChange(event.target.value)}
+                                  onContractChange={(event) => this.handleContractChange(event.target.value)}
+                                  onSubmit={this.handleContractSubmit.bind(this)}/>
 
-                <Grid item>
-                    <Paper className={classes.paper}>
-                        <form>
-                            <div>
-                                <TextField required className="TextField" value={this.state.solution}
-                                           label="Solution Vector"
-                                           onChange={(event) => this.handleSolutionChange(event.target.value)}/>
-                            </div>
-                            <div>
-                                <TextField required className="TextField" value={this.state.opt} label="Optimal Value"
-                                           onChange={(event) => this.handleOptChange(event.target.value)}/>
-                            </div>
-                            <div>
-                                <Button color="primary" onClick={this.handleCommit.bind(this)}>
-                                    Commit
-                                </Button>
-                                <Button color="primary" onClick={this.handleReveal.bind(this)}>
-                                    Reveal
-                                </Button>
-                                <Button color="primary" onClick={this.handleFinish.bind(this)}>
-                                    Claim Reward
-                                </Button>
-                            </div>
-                        </form>
-                    </Paper>
+                    <Grid item xs={12}>
+                        <Paper className={classes.paper}>
+                            <form>
+                                <div>
+                                    <TextField required className="TextField" value={this.state.solution}
+                                               label="Solution Vector"
+                                               onChange={(event) => this.handleSolutionChange(event.target.value)}/>
+                                </div>
+                                <div>
+                                    <TextField required className="TextField"
+                                               value={this.state.opt} label="Optimal Value"
+                                               onChange={(event) => this.handleOptChange(event.target.value)}/>
+                                </div>
+                                <div>
+                                    <Button color="primary" onClick={this.handleCommit.bind(this)}>
+                                        Commit
+                                    </Button>
+                                    <Button color="primary" onClick={this.handleReveal.bind(this)}>
+                                        Reveal
+                                    </Button>
+                                    <Button color="primary" onClick={this.handleFinish.bind(this)}>
+                                        Claim Reward
+                                    </Button>
+                                </div>
+                            </form>
+                        </Paper>
+                    </Grid>
+                    <div>
+                        {
+                            this.state.log.map((str) => (
+                                <div> {str} </div>
+                            ))
+                        }
+                    </div>
                 </Grid>
-                <div>
-                    {
-                        this.state.log.map((str) => (
-                            <div> {str} </div>
-                        ))
-                    }
-                </div>
-            </Grid>
-        );
+            );
+        } else {
+            return (
+                <Grid container spacing={16}>
+                    <LoginFrom classes={this.props.classes}
+                               address={this.state.address}
+                               balance={this.state.balance}
+                               loggedIn={this.state.loggedIn}
+                               onAddressChange={(event) => this.handleAddressChange(event.target.value)}
+                               onSubmit={this.handleLoginSubmit.bind(this)}/>
+                </Grid>
+            );
+        }
     }
 }
 

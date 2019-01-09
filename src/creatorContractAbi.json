@@ -1,0 +1,75 @@
+[
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "founder",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_n",
+        "type": "uint32"
+      },
+      {
+        "name": "_m",
+        "type": "uint32"
+      },
+      {
+        "name": "_a",
+        "type": "int32[]"
+      },
+      {
+        "name": "_b",
+        "type": "int32[]"
+      },
+      {
+        "name": "_c",
+        "type": "int32[]"
+      },
+      {
+        "name": "_time",
+        "type": "uint256"
+      }
+    ],
+    "name": "createProblem",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": true,
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "problemList",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  }
+]
