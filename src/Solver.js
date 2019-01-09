@@ -125,7 +125,7 @@ class ContractForm extends Component {
             constraintsHTML.push(this.renderConstraint(i));
         }
         return (
-            <Grid item xs={12}>
+            <Grid item xs={6}>
                 <Paper className={this.props.classes.paper}>
                     <Table>
                         <TableBody>
@@ -328,7 +328,7 @@ class Solver extends React.Component {
                                   onContractChange={(event) => this.handleContractChange(event.target.value)}
                                   onSubmit={this.handleContractSubmit.bind(this)}/>
 
-                    <Grid item xs={12}>
+                    <Grid item xs={6}>
                         <Paper className={classes.paper}>
                             <form>
                                 <div>
