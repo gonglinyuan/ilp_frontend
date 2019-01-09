@@ -68,10 +68,14 @@ class LoginFrom extends Component {
 }
 
 class ProblemList extends Component {
-    renderProblem(problemAddress, i) {
+    renderProblem(problem, i) {
         return (
             <TableRow>
-                <TableCell>{problemAddress}</TableCell>
+                <TableCell>{problem.address}</TableCell>
+                <TableCell align="right">{problem.n}</TableCell>
+                <TableCell align="right">{problem.m}</TableCell>
+                <TableCell align="right">{problem.bounty + ' ETH'}</TableCell>
+                <TableCell align="right">{moment.unix(problem.deadline).fromNow()}</TableCell>
                 <TableCell>
                     <Button color="primary" onClick={(event) => this.props.onSubmit(i)}>
                         Show
@@ -86,7 +90,7 @@ class ProblemList extends Component {
         for (let i = 0; i < this.props.problemList.length; ++i) {
             problemsHTML.push(this.renderProblem(this.props.problemList[i], i));
         }
-        problemsHTML = problemsHTML.reverse();
+        problemsHTML = problemsHTML.sort((obj1, obj2) => (obj1.deadline - obj2.deadline));
         return (
             <Grid item xs={12}>
                 <Paper className={this.props.classes.paper}>
@@ -94,6 +98,10 @@ class ProblemList extends Component {
                         <TableHead>
                             <TableRow>
                                 <TableCell>Address</TableCell>
+                                <TableCell align="right"># Variables</TableCell>
+                                <TableCell align="right"># Constraints</TableCell>
+                                <TableCell align="right">Bounty</TableCell>
+                                <TableCell align="right">Deadline</TableCell>
                                 <TableCell/>
                             </TableRow>
                         </TableHead>
@@ -153,7 +161,7 @@ class ContractForm extends Component {
                                     Bounty (Left)
                                 </TableCell>
                                 <TableCell align="right">
-                                    {this.props.bounty}
+                                    {this.props.bounty + ' ETH'}
                                 </TableCell>
                             </TableRow>
                         </TableBody>
@@ -215,10 +223,10 @@ class Solver extends React.Component {
         console.log(this.state.address);
         console.log(this.state.problemList);
         console.log(i);
-        backend.getDesription(this.state.address, this.state.problemList[i], (problem) => {
+        backend.getDesription(this.state.address, this.state.problemList[i].address, (problem) => {
             this.setState({
                 problem: problem,
-                contractAddress: this.state.problemList[i]
+                contractAddress: this.state.problemList[i].address
             });
         });
     }
@@ -266,11 +274,22 @@ class Solver extends React.Component {
     }
 
     handleReveal(event) {
+        var nonce;
+        if (this.state.nonce === '') {
+            nonce = new Uint32Array(2);
+            crypto.getRandomValues(nonce);
+            nonce = '0x' + nonce[0].toString(16) + nonce[1].toString(16);
+            this.setState({
+                nonce: nonce
+            });
+        } else {
+            nonce = this.state.nonce;
+        }
         backend.revealSolution(
             this.state.address,
             this.state.contractAddress,
             JSON.parse(this.state.solution),
-            this.state.nonce,
+            nonce,
             parseInt(this.state.opt)
         )
     }

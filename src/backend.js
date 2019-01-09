@@ -8,7 +8,7 @@ let Web3 = require('web3');
 let web3 = new Web3(Web3.givenProvider || "ws://localhost:7545");
 let ABI = require('./EthereumAbi');
 
-const extra_gas = 10000;
+const extra_gas = 1000000;
 
 function getBalance(address) {
     if (web3.utils.isAddress(address)) {
@@ -75,7 +75,23 @@ function getProblemList(address, contractAddress, callback) {
         method.call({
             from: address,
             gas: gas + extra_gas
-        }).then(callback);
+        }).then((arr) => {
+            console.log(arr);
+            var problemList = [];
+            for (let i = 0; i < arr[0].length; ++i) {
+                let obj = {
+                    address: arr[0][i],
+                    n: parseInt(arr[1][i].replace(/ /g, '')),
+                    m: parseInt(arr[2][i].replace(/ /g, '')),
+                    deadline: parseInt(arr[3][i].replace(/ /g, '')),
+                    bounty: web3.utils.fromWei(arr[4][i], "ether")
+                };
+                if (moment.unix(obj.deadline).isAfter(moment())) {
+                    problemList.push(obj);
+                }
+            }
+            callback(problemList);
+        });
     });
 }
 

@@ -163,6 +163,11 @@ class ProblemFactory extends React.Component {
                                 </div>
 
                                 {constraintsHTML}
+
+                                <div>
+                                    <TextField type="time" value={this.state.time} min="00:00" label="Time"
+                                               onChange={(event) => this.handleTimeChange(event.target.value)}/>
+                                </div>
                             </div>
 
                             <Divider variant="middle"/>
@@ -174,11 +179,7 @@ class ProblemFactory extends React.Component {
 
                             <Divider variant="middle"/>
                             <div className={classes.paper}>
-                                <div>
-                                    <label>Time:</label>
-                                    <input type="time" value={this.state.time} min="00:00"
-                                           onChange={(event) => this.handleTimeChange(event.target.value)}/>
-                                </div>
+
 
                                 <div>
                                     <Button color="primary" type="submit">
