@@ -110,7 +110,7 @@ class ProblemList extends Component {
 class ContractForm extends Component {
     renderConstraint(i) {
         return (
-            <ListItem>{this.props.constraints[i]}</ListItem>
+            <p>{this.props.constraints[i]}</p>
         )
     }
 
@@ -122,21 +122,42 @@ class ContractForm extends Component {
         return (
             <Grid item xs={12}>
                 <Paper className={this.props.classes.paper}>
-                    <p>
-                        Maximize: {this.props.objective}
-                    </p>
-                    <p>
-                        Subject to:
-                    </p>
-                    <List>
-                        {constraintsHTML}
-                    </List>
-                    <p>
-                        Deadline: {this.props.deadline}
-                    </p>
-                    <p>
-                        Bounty: {this.props.bounty}
-                    </p>
+                    <Table>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell>
+                                    Maximize
+                                </TableCell>
+                                <TableCell align="right">
+                                    {this.props.objective}
+                                </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>
+                                    Subject to
+                                </TableCell>
+                                <TableCell align="right">
+                                    {constraintsHTML}
+                                </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>
+                                    Deadline
+                                </TableCell>
+                                <TableCell align="right">
+                                    {this.props.deadline}
+                                </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>
+                                    Bounty (Left)
+                                </TableCell>
+                                <TableCell align="right">
+                                    {this.props.bounty}
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
                 </Paper>
             </Grid>
         )
