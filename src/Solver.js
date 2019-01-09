@@ -158,7 +158,7 @@ class ContractForm extends Component {
                                     Bounty (Left)
                                 </TableCell>
                                 <TableCell align="right">
-                                    {this.props.bounty + ' ETH'}
+                                    {this.props.bounty}
                                 </TableCell>
                             </TableRow>
                         </TableBody>
