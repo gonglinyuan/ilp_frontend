@@ -119,6 +119,10 @@ contract Problem {
 contract ProblemCreator {
     address payable public founder;
     Problem[] problems;
+    uint32[] n;
+    uint32[] m;
+    uint[] deadline;
+    uint[] value;
     
     constructor() public {
         founder = msg.sender;
@@ -129,10 +133,15 @@ contract ProblemCreator {
         founder.transfer(msg.value / 100);
         Problem problemAddr = (new Problem).value(msg.value - msg.value / 100)(msg.sender, _n, _m, _a, _b, _c, _time);
         problems.push(problemAddr);
+        n.push(_n);
+        m.push(_m);
+        deadline.push(block.timestamp + _time);
+        value.push(msg.value - msg.value / 100);
         return problemAddr;
     }
     
-    function problemList() public view returns (Problem[] memory) {
-        return problems;
+    //returns problem address, n, m, deadline, value
+    function problemList() public view returns (Problem[] memory, uint32[] memory, uint32[] memory, uint[] memory, uint[] memory) {
+        return (problems, n, m, deadline, value);
     }
 }
