@@ -29,7 +29,7 @@ contract Problem {
     bool public finished;
     
     // n variables, m constraints; a is int[m, n], b is int[m], c is int[n]
-    constructor(uint32 _n, uint32 _m, int32[] memory _a, int32[] memory _b, int32[] memory _c, uint _time) public payable {
+    constructor(address _owner, uint32 _n, uint32 _m, int32[] memory _a, int32[] memory _b, int32[] memory _c, uint _time) public payable {
         require(_a.length == uint64(_n) * uint64(_m));
         require(_b.length == _m);
         require(_c.length == _n);
@@ -40,7 +40,11 @@ contract Problem {
         c = _c;
         deadline = block.timestamp + _time;
         finished = false;
-        owner = msg.sender;
+        owner = _owner;
+    }
+    
+    function getHash(int32[] memory _x, bytes8 _nonce) public view returns (bytes32) {
+        return keccak256(abi.encodePacked(_x, _nonce, msg.sender));
     }
     
     function solve(bytes32 _hashValue, int _opt) public {
@@ -52,17 +56,20 @@ contract Problem {
         });
     }
     
-    function reveal(int32[] memory _x, bytes8 _nonce) public {
+    function reveal(int32[] memory _x, bytes8 _nonce, int opt) public {
         require(block.timestamp < deadline);
         require(_x.length == n);
+        require(validate(_x, opt));
         BlindSolution memory sol = blindSolution[msg.sender];
-        require(keccak256(abi.encodePacked(_x, _nonce, msg.sender)) == sol.hashValue);
-        require(validate(_x, sol.opt));
-        if ((best.addr == address(0x00)) || (sol.opt > best.opt) || ((sol.opt == best.opt) && (sol.timeStamp < best.timeStamp))) {
+        uint timeStamp = block.timestamp;
+        if (keccak256(abi.encodePacked(_x, _nonce, msg.sender)) == sol.hashValue && opt == sol.opt) {
+            timeStamp = sol.timeStamp;
+        }
+        if ((best.addr == address(0x00)) || (opt > best.opt) || ((opt == best.opt) && (timeStamp < best.timeStamp))) {
             best = Solution({
                x: _x,
-               opt: sol.opt,
-               timeStamp: sol.timeStamp,
+               opt: opt,
+               timeStamp: timeStamp,
                addr: msg.sender
             });
         }
@@ -106,5 +113,35 @@ contract Problem {
     
     function describe() public view returns (uint32, uint32, int32[] memory, int32[] memory, int32[] memory, uint, address, int, bool, uint) {
         return (n, m, a, b, c, deadline, owner, best.opt, finished, address(this).balance);
+    }
+}
+
+contract ProblemCreator {
+    address payable public founder;
+    Problem[] problems;
+    uint32[] n;
+    uint32[] m;
+    uint[] deadline;
+    uint[] value;
+    
+    constructor() public {
+        founder = msg.sender;
+    }
+    
+    // consistent with constructor of Problem
+    function createProblem(uint32 _n, uint32 _m, int32[] memory _a, int32[] memory _b, int32[] memory _c, uint _time) public payable returns (Problem) {
+        founder.transfer(msg.value / 100);
+        Problem problemAddr = (new Problem).value(msg.value - msg.value / 100)(msg.sender, _n, _m, _a, _b, _c, _time);
+        problems.push(problemAddr);
+        n.push(_n);
+        m.push(_m);
+        deadline.push(block.timestamp + _time);
+        value.push(msg.value - msg.value / 100);
+        return problemAddr;
+    }
+    
+    //returns problem address, n, m, deadline, value
+    function problemList() public view returns (Problem[] memory, uint32[] memory, uint32[] memory, uint[] memory, uint[] memory) {
+        return (problems, n, m, deadline, value);
     }
 }

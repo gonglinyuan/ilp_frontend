@@ -2,11 +2,13 @@ import moment from "moment";
 
 let contractAbi = require('./contractAbi');
 let contractBin = require('./contractBin');
+let creatorContractAbi = require('./creatorContractAbi');
+let creatorContractBin = require('./creatorContractBin');
 let Web3 = require('web3');
 let web3 = new Web3(Web3.givenProvider || "ws://localhost:7545");
 let ABI = require('./EthereumAbi');
 
-const extra_gas = 10000;
+const extra_gas = 1000000;
 
 function getBalance(address) {
     if (web3.utils.isAddress(address)) {
@@ -18,22 +20,80 @@ function getBalance(address) {
     }
 }
 
-function submitProblem(address, problem, bounty, receiptCallback) {
-    let contract = new web3.eth.Contract(contractAbi);
+// function submitProblem(address, problem, bounty, receiptCallback) {
+//     let contract = new web3.eth.Contract(contractAbi);
+//     let transaction = contract.deploy({
+//         data: "0x" + contractBin.object,
+//         arguments: [problem.n, problem.m, problem.a, problem.b, problem.c, problem.time]
+//     });
+//     transaction.estimateGas().then((gas => {
+//         web3.eth.sendTransaction({
+//             from: address,
+//             data: transaction.encodeABI(),
+//             gas: gas + extra_gas,
+//             value: web3.utils.toWei(bounty, 'ether')
+//         }).once('receipt', receiptCallback);
+//     }));
+// }
+//
+function createProblemList(address, receiptCallback) {
+    let contract = new web3.eth.Contract(creatorContractAbi);
     let transaction = contract.deploy({
-        data: "0x" + contractBin.object,
-        arguments: [problem.n, problem.m, problem.a, problem.b, problem.c, problem.time]
+        data: "0x" + creatorContractBin.object
     });
     transaction.estimateGas().then((gas => {
         web3.eth.sendTransaction({
             from: address,
             data: transaction.encodeABI(),
-            gas: gas + extra_gas,
-            value: web3.utils.toWei(bounty, 'ether')
-        }).once('receipt', receiptCallback)
-    }))
+            gas: gas + extra_gas
+        }).once('receipt', receiptCallback);
+    }));
 }
 
+function createProblem(address, contractAddress, problem, bounty, callback) {
+    let contract = new web3.eth.Contract(creatorContractAbi, contractAddress);
+    let method = contract.methods.createProblem(problem.n, problem.m, problem.a, problem.b, problem.c, problem.time);
+    // console.log(contract);
+    // console.log(method);
+    method.estimateGas({
+        from: address
+    }).then((gas) => {
+        method.send({
+            from: address,
+            gas: gas + extra_gas,
+            value: web3.utils.toWei(bounty, 'ether')
+        }).on('receipt', callback);
+    });
+}
+
+function getProblemList(address, contractAddress, callback) {
+    let contract = new web3.eth.Contract(creatorContractAbi, contractAddress);
+    let method = contract.methods.problemList();
+    method.estimateGas({
+        from: address
+    }).then((gas) => {
+        method.call({
+            from: address,
+            gas: gas + extra_gas
+        }).then((arr) => {
+            console.log(arr);
+            var problemList = [];
+            for (let i = 0; i < arr[0].length; ++i) {
+                let obj = {
+                    address: arr[0][i],
+                    n: parseInt(arr[1][i].replace(/ /g, '')),
+                    m: parseInt(arr[2][i].replace(/ /g, '')),
+                    deadline: parseInt(arr[3][i].replace(/ /g, '')),
+                    bounty: web3.utils.fromWei(arr[4][i], "ether")
+                };
+                if (moment.unix(obj.deadline).isAfter(moment())) {
+                    problemList.push(obj);
+                }
+            }
+            callback(problemList);
+        });
+    });
+}
 
 function getDesription(address, contractAddress, callback) {
     let contract = new web3.eth.Contract(contractAbi, contractAddress);
@@ -79,9 +139,9 @@ function commitSolution(address, contractAddress, solution, nonce, opt, confirmC
     });
 }
 
-function revealSolution(address, contractAddress, solution, nonce) {
+function revealSolution(address, contractAddress, solution, nonce, opt) {
     let contract = new web3.eth.Contract(contractAbi, contractAddress);
-    let method = contract.methods.reveal(solution, nonce);
+    let method = contract.methods.reveal(solution, nonce, opt);
     method.estimateGas({
         from: address
     }).then((gas) => {
@@ -105,6 +165,10 @@ function claimReward(address, contractAddress) {
     });
 }
 
+function isValidAddress(address) {
+    return web3.utils.isAddress(address);
+}
+
 // submitProblem("0x21d094990Cf65dc8BA0a2c2afc734d0f66A8b523", {
 //     n : 2,
 //     m : 2,
@@ -116,11 +180,13 @@ function claimReward(address, contractAddress) {
 
 let backend = {
     getBalance: getBalance,
-    submitProblem: submitProblem,
+    createProblem: createProblem,
     getDesription: getDesription,
     commitSolution: commitSolution,
     revealSolution: revealSolution,
-    claimReward: claimReward
+    claimReward: claimReward,
+    getProblemList: getProblemList,
+    isValidAddress: isValidAddress
 };
 
 export default backend;
